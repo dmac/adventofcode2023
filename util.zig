@@ -34,6 +34,6 @@ pub fn tokenize(allocator: std.mem.Allocator, s: []const u8, delims: []const u8)
     return tokens.items;
 }
 
-pub fn split(allocator: std.mem.Allocator, s: []const u8) ![][]const u8 {
+pub fn fields(allocator: std.mem.Allocator, s: []const u8) ![][]const u8 {
     return tokenize(allocator, s, " \n\t");
 }
