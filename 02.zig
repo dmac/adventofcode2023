@@ -23,11 +23,9 @@ pub fn main() !void {
         const i = std.mem.indexOf(u8, line, ":").?;
         const id: i64 = try util.atoi(line[5..i]);
         var trials = std.ArrayList(Trial).init(allocator);
-        var trials_it = std.mem.splitScalar(u8, line[i + 1 ..], ';');
-        while (trials_it.next()) |trial_s| {
-            var colors_it = std.mem.splitScalar(u8, trial_s, ',');
+        for (try util.split(allocator, line[i + 1 ..], ";")) |trial_s| {
             var trial = Trial{};
-            while (colors_it.next()) |color_s| {
+            for (try util.split(allocator, trial_s, ",")) |color_s| {
                 const fields = try util.fields(allocator, color_s);
                 const n = try util.atoi(fields[0]);
                 switch (fields[1][0]) {

@@ -8,7 +8,7 @@ pub fn file_lines(allocator: std.mem.Allocator, filename: []const u8) ![][]u8 {
     while (try buf.reader().readUntilDelimiterOrEofAlloc(allocator, '\n', 1e6)) |line| {
         try lines.append(line);
     }
-    return lines.items;
+    return lines.toOwnedSlice();
 }
 
 pub fn file_ints(allocator: std.mem.Allocator, filename: []const u8) ![]i64 {
@@ -18,7 +18,7 @@ pub fn file_ints(allocator: std.mem.Allocator, filename: []const u8) ![]i64 {
         const n = try std.fmt.parseInt(i64, line, 10);
         try ints.append(n);
     }
-    return ints.items;
+    return ints.toOwnedSlice();
 }
 
 pub fn atoi(s: []const u8) !i64 {
@@ -31,9 +31,18 @@ pub fn tokenize(allocator: std.mem.Allocator, s: []const u8, delims: []const u8)
     while (it.next()) |t| {
         try tokens.append(t);
     }
-    return tokens.items;
+    return tokens.toOwnedSlice();
 }
 
 pub fn fields(allocator: std.mem.Allocator, s: []const u8) ![][]const u8 {
-    return tokenize(allocator, s, " \n\t");
+    return tokenize(allocator, s, &std.ascii.whitespace);
+}
+
+pub fn split(allocator: std.mem.Allocator, s: []const u8, sep: []const u8) ![][]const u8 {
+    var list = std.ArrayList([]const u8).init(allocator);
+    var it = std.mem.split(u8, s, sep);
+    while (it.next()) |sub| {
+        try list.append(sub);
+    }
+    return try list.toOwnedSlice();
 }
