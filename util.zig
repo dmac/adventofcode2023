@@ -46,3 +46,64 @@ pub fn split(allocator: std.mem.Allocator, s: []const u8, sep: []const u8) ![][]
     }
     return try list.toOwnedSlice();
 }
+
+pub fn Point(comptime T: type) type {
+    return struct {
+        row: T,
+        col: T,
+    };
+}
+
+// neighbors returns the (row, col) points in a 2D grid that are immediately
+// adjacent to a rectangular region in the grid. The region is defined by its
+// top-left corner, width, and height. Diagonal neighbors are included.
+pub fn neighbors(
+    allocator: std.mem.Allocator,
+    rows: usize,
+    cols: usize,
+    topleft_row: usize,
+    topleft_col: usize,
+    width: usize,
+    height: usize,
+) ![]Point(usize) {
+    std.debug.assert(width > 0);
+    std.debug.assert(height > 0);
+    var points = std.ArrayList(Point(usize)).init(allocator);
+    // top neighbors
+    if (topleft_row > 0) {
+        const r = topleft_row - 1;
+        var c = if (topleft_col > 0) topleft_col - 1 else topleft_col;
+        while (c <= topleft_col + width and c < cols) : (c += 1) {
+            const p = Point(usize){ .row = r, .col = c };
+            try points.append(p);
+        }
+    }
+    // bottom neighbors
+    if (topleft_row + height < rows) {
+        const r = topleft_row + height;
+        var c = if (topleft_col > 0) topleft_col - 1 else topleft_col;
+        while (c <= topleft_col + width and c < cols) : (c += 1) {
+            const p = Point(usize){ .row = r, .col = c };
+            try points.append(p);
+        }
+    }
+    // left neighbors
+    if (topleft_col > 0) {
+        var r = topleft_row;
+        const c = topleft_col - 1;
+        while (r < topleft_row + height and r < rows) : (r += 1) {
+            const p = Point(usize){ .row = r, .col = c };
+            try points.append(p);
+        }
+    }
+    // right neighbors
+    if (topleft_col + width < cols) {
+        var r = topleft_row;
+        const c = topleft_col + width;
+        while (r < topleft_row + height and r < rows) : (r += 1) {
+            const p = Point(usize){ .row = r, .col = c };
+            try points.append(p);
+        }
+    }
+    return points.toOwnedSlice();
+}

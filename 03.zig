@@ -19,7 +19,7 @@ pub fn main() !void {
         while (col < line.len) : (col += 1) {
             if (std.ascii.isDigit(line[col])) {
                 const ds = digit_str(line, col);
-                if (try is_part(lines, ds, row, col, &gear_map)) {
+                if (try is_part(allocator, lines, ds, row, col, &gear_map)) {
                     part_sum += try util.atoi(ds);
                 }
                 col += ds.len - 1;
@@ -50,51 +50,17 @@ fn digit_str(line: []const u8, start: usize) []const u8 {
     return line[start..end];
 }
 
-fn is_part(lines: [][]const u8, ds: []const u8, row: usize, col: usize, gear_map: *GearMap) !bool {
+fn is_part(allocator: std.mem.Allocator, lines: [][]const u8, ds: []const u8, row: usize, col: usize, gear_map: *GearMap) !bool {
     var part = false;
-    // check above
-    if (row > 0) {
-        const r = row - 1;
-        var c = if (col > 0) col - 1 else col;
-        while (c <= col + ds.len and c < lines[row].len) : (c += 1) {
-            if (is_symbol(lines[r][c])) {
-                if (lines[r][c] == '*') {
-                    try update_gear_map(gear_map, ds, r, c);
-                }
-                part = true;
-            }
-        }
-    }
-    // check below
-    if (row < lines.len - 1) {
-        const r = row + 1;
-        var c = if (col > 0) col - 1 else col;
-        while (c <= col + ds.len and c < lines[row].len) : (c += 1) {
-            if (is_symbol(lines[r][c])) {
-                if (lines[r][c] == '*') {
-                    try update_gear_map(gear_map, ds, r, c);
-                }
-                part = true;
-            }
-        }
-    }
-    // check sides
-    if (col > 0) {
-        const c = col - 1;
-        if (is_symbol(lines[row][c])) {
-            if (lines[row][c] == '*') {
-                try update_gear_map(gear_map, ds, row, c);
-            }
+    const neighbors = try util.neighbors(allocator, lines.len, lines[0].len, row, col, ds.len, 1);
+    for (neighbors) |point| {
+        const r = point.row;
+        const c = point.col;
+        if (is_symbol(lines[r][c])) {
             part = true;
-        }
-    }
-    if (col + ds.len < lines[row].len) {
-        const c = col + ds.len;
-        if (is_symbol(lines[row][c])) {
-            if (lines[row][c] == '*') {
-                try update_gear_map(gear_map, ds, row, c);
+            if (lines[r][c] == '*') {
+                try update_gear_map(gear_map, ds, r, c);
             }
-            part = true;
         }
     }
     return part;
