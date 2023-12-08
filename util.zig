@@ -107,3 +107,11 @@ pub fn neighbors(
     }
     return points.toOwnedSlice();
 }
+
+pub fn lcm(a: anytype, b: anytype) @TypeOf(a, b) {
+    const pa: u64 = @abs(a);
+    const pb: u64 = @abs(b);
+    const gcd = std.math.gcd(pa, pb);
+    const _lcm = pa / gcd * pb;
+    return @as(@TypeOf(a, b), @intCast(_lcm));
+}
