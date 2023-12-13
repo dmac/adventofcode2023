@@ -1,5 +1,11 @@
 const std = @import("std");
 
+pub fn file_bytes(allocator: std.mem.Allocator, filename: []const u8) ![]u8 {
+    const f = try std.fs.cwd().openFile(filename, .{});
+    defer f.close();
+    return try f.reader().readAllAlloc(allocator, 1e9);
+}
+
 pub fn file_lines(allocator: std.mem.Allocator, filename: []const u8) ![][]u8 {
     const f = try std.fs.cwd().openFile(filename, .{});
     defer f.close();
@@ -25,7 +31,7 @@ pub fn atoi(s: []const u8) !i64 {
     return try std.fmt.parseInt(i64, s, 10);
 }
 
-pub fn tokenize(allocator: std.mem.Allocator, s: []const u8, delims: []const u8) ![][]const u8 {
+pub fn tokenize(allocator: std.mem.Allocator, s: []const u8, delims: []const u8) ![][]u8 {
     var tokens = std.ArrayList([]const u8).init(allocator);
     var it = std.mem.tokenizeAny(u8, s, delims);
     while (it.next()) |t| {
@@ -38,11 +44,11 @@ pub fn fields(allocator: std.mem.Allocator, s: []const u8) ![][]const u8 {
     return tokenize(allocator, s, &std.ascii.whitespace);
 }
 
-pub fn split(allocator: std.mem.Allocator, s: []const u8, sep: []const u8) ![][]const u8 {
-    var list = std.ArrayList([]const u8).init(allocator);
+pub fn split(allocator: std.mem.Allocator, s: []u8, sep: []const u8) ![][]u8 {
+    var list = std.ArrayList([]u8).init(allocator);
     var it = std.mem.split(u8, s, sep);
     while (it.next()) |sub| {
-        try list.append(sub);
+        try list.append(@constCast(sub));
     }
     return try list.toOwnedSlice();
 }
