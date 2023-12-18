@@ -32,10 +32,10 @@ pub fn atoi(s: []const u8) !i64 {
 }
 
 pub fn tokenize(allocator: std.mem.Allocator, s: []const u8, delims: []const u8) ![][]u8 {
-    var tokens = std.ArrayList([]const u8).init(allocator);
+    var tokens = std.ArrayList([]u8).init(allocator);
     var it = std.mem.tokenizeAny(u8, s, delims);
     while (it.next()) |t| {
-        try tokens.append(t);
+        try tokens.append(@constCast(t));
     }
     return tokens.toOwnedSlice();
 }
